@@ -1,0 +1,306 @@
+//user
+package com.training.PersonalFinanceManagementSystem.Models;
+
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.annotation.Generated;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
+public class Users 
+{
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@JsonProperty("user_name")
+	private String user_name;
+	
+	@JsonProperty("password")
+	private String password;
+	
+	@Column
+	private LocalDateTime date = LocalDateTime.now();
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getUser_name() {
+		return user_name;
+	}
+
+	public void setUser_name(String user_name) {
+		this.user_name = user_name;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public LocalDateTime getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDateTime date) {
+		this.date = date;
+	}
+
+	public Users(Long id, String user_name, String password, LocalDateTime date) {
+		super();
+		this.id = id;
+		this.user_name = user_name;
+		this.password = password;
+		this.date = date;
+	}
+
+	public Users() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+}
+//user controller
+package com.training.PersonalFinanceManagementSystem.Controllers;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.training.PersonalFinanceManagementSystem.Models.Users;
+import com.training.PersonalFinanceManagementSystem.Repositories.UserRepository;
+
+
+
+@RestController
+public class UsersController 
+{
+	@Autowired
+	UserRepository userRepo;
+	
+	@PostMapping("/register")
+	public ResponseEntity<Users> addUser(@RequestBody Users user)
+	{
+		Users userObj = userRepo.save(user);
+		return ResponseEntity.ok(userObj);
+		
+	}
+	@PostMapping("/login")
+	public ResponseEntity<Map<String, String>> signIn(@RequestBody Users user)
+	{
+		Map<String, String> response = new HashMap<>();
+		List<Users> list = userRepo.userLogin(user.getUser_name(), user.getPassword());
+		if(list.size() == 0) 
+		{
+			response.put("Sign In" , "Failed");
+			response.put("User" , "Not found");
+		}
+		else
+		{
+			String b = list.get(0).getPassword();
+			if(!user.getPassword().equals(b))
+			{
+				response.put("Sign In" , "Failed");
+				response.put("User" , "Invalid password");
+			}
+			else
+			{
+				response.put("Sign In" , "success");
+				response.put("UserId" , Long.toString(list.get(0).getId()));
+				response.put("User Name" , list.get(0).getUser_name());
+			}
+//transaction
+package com.training.PersonalFinanceManagementSystem.Models;
+
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+
+@Entity
+public class Transactions 
+{
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long transaction_id;
+	
+	@JsonProperty("user_id")
+	private Long user_id;
+	
+	@JsonProperty("transaction_type")
+	private String transaction_type;
+	
+	@JsonProperty("amount")
+	private double amount;
+	
+	@JsonProperty("category")
+	private String category;
+	
+	@Column
+	private LocalDateTime transation_date = LocalDateTime.now();
+	
+	@JsonProperty("notes")
+	private String notes;
+
+	public Long getTransaction_id() {
+		return transaction_id;
+	}
+
+	public void setTransaction_id(Long transaction_id) {
+		this.transaction_id = transaction_id;
+	}
+
+	public Long getUser_id() {
+		return user_id;
+	}
+
+	public void setUser_id(Long user_id) {
+		this.user_id = user_id;
+	}
+
+	public String getTransaction_type() {
+		return transaction_type;
+	}
+
+	public void setTransaction_type(String transaction_type) {
+		this.transaction_type = transaction_type;
+	}
+
+	public double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public LocalDateTime getTransation_date() {
+		return transation_date;
+	}
+
+	public void setTransation_date(LocalDateTime transation_date) {
+		this.transation_date = transation_date;
+	}
+
+	public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	public Transactions(Long transaction_id, Long user_id, String transaction_type, double amount, String category,
+			LocalDateTime transation_date, String notes) {
+		super();
+		this.transaction_id = transaction_id;
+		this.user_id = user_id;
+		this.transaction_type = transaction_type;
+		this.amount = amount;
+		this.category = category;
+		this.transation_date = transation_date;
+		this.notes = notes;
+	}
+
+	public Transactions() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	
+	
+	
+}
+//transaction controller
+package com.training.PersonalFinanceManagementSystem.Controllers;
+
+import java.util.*;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.training.PersonalFinanceManagementSystem.Models.Transactions;
+import com.training.PersonalFinanceManagementSystem.Models.Users;
+import com.training.PersonalFinanceManagementSystem.Repositories.TransactionsRepository;
+
+import jakarta.persistence.Entity;
+
+@RestController
+public class TransactionsController 
+{
+	@Autowired
+	private TransactionsRepository transactionRepo;
+	
+	@PostMapping("addTrasaction")
+	public ResponseEntity<Transactions> addTrasaction(@RequestBody Transactions t)
+	{
+		Transactions tObj = transactionRepo.save(t);
+		return ResponseEntity.ok(tObj);
+	}
+	
+	@GetMapping("/getTransactions")
+	public ResponseEntity<List<Transactions>> getAllTransactions() 
+	{
+		List<Transactions> transactions = transactionRepo.findAll();
+		return ResponseEntity.ok(transactions);
+	}
+	
+	@PostMapping("/expensesByCategory")
+	public ResponseEntity<List<Map<String,String>>> expensesCategory(@RequestBody Transactions t)
+	{
+		List<Map<String,String>> list = transactionRepo.UserExpensesByCategory(t.getUser_id());
+		return ResponseEntity.ok(list);
+	}
+	
+	
+	
+}
+
+			
+		}
+		return ResponseEntity.ok(response);
+	
+	}
+}
